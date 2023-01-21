@@ -1,2 +1,5 @@
-# Twitter-Account-Checker
-Fast, reliable Twitter Account Checker that doesn't lock accounts on check. Yet. And the best part? its free.
+# Twitter Account Checker
+ Somewhat fast Twitter Account Checker
+
+# How to build
+pyinstaller.exe --onefile --name "Twitter Checker" --icon="app.ico" --collect-all "pyfiglet" main.py
