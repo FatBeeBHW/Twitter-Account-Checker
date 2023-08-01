@@ -30,6 +30,8 @@ sproxy = settings["proxy"]
 checkflag = settings["checkflag"]
 addct0 = settings["addct0"]
 saveastoken = settings["saveastoken"]
+concurrency = int(settings["concurrency"])
+
 
 # Fuck you python
 if "True" in checkflag:
@@ -205,7 +207,7 @@ async def check(auth=None, screen_name=None, password=None, email_or_phone=None,
     retryme = 0
     while True:
         try:
-            async with httpx.AsyncClient(http2=False, verify=False, proxies=proxies, timeout=3) as session:
+            async with httpx.AsyncClient(http2=False, verify=False, proxies=proxies, timeout=5) as session:
 
                 if checkflag == True and screen_name != None:
                     await session.headers.update(
@@ -424,9 +426,7 @@ async def check(auth=None, screen_name=None, password=None, email_or_phone=None,
                     }
 
                 # fetch ct0 from cookies
-                ct0_response = await session.post(
-                    PROFILE_UPDATE, cookies=cookies, headers=STANDARD_HEADERS)
-
+                ct0_response = await session.post(PROFILE_UPDATE, cookies=cookies, headers=STANDARD_HEADERS)
                 ct0 = ct0_response.cookies['ct0']
                 cookies['ct0'] = ct0
                 STANDARD_HEADERS['x-csrf-token'] = ct0
@@ -475,37 +475,54 @@ async def check(auth=None, screen_name=None, password=None, email_or_phone=None,
         except Exception as err:
             retryme += 1
             print(f"{Fore.LIGHTYELLOW_EX}[!] {err} | Retry: #{retryme}")
-            continue
 
 
 async def main():
+    sem = asyncio.Semaphore(concurrency)
+
+    async def sem_task(task):
+        MAX_RETRIES = 50
+        for attempt in range(MAX_RETRIES):
+            try:
+                async with sem:
+                    await task
+                break
+            except Exception as e:
+                print(
+                    f"{Fore.LIGHTYELLOW_EX}[!] Task failed with error: {e}, retrying ({attempt + 1}/{MAX_RETRIES})...")
+                if attempt + 1 == MAX_RETRIES:
+                    print(
+                        f"{Fore.RED}[!] Task failed after {MAX_RETRIES} attempts, giving up.")
+            except asyncio.CancelledError:
+                print(
+                    f"{Fore.LIGHTYELLOW_EX}[!] Task was cancelled, retrying...")
+                continue
+
     tasks = []
-    for x in range(len(tokens)):
+    for token in tokens:
         try:
-            if isonlytoken == False and noct0 == False:
-                auth = tokens[x].split(':')[4]
-                ct0s = tokens[x].split(':')[3]
-                email_or_phone = tokens[x].split(':')[2]
-                password = tokens[x].split(':')[1]
-                screen_name = tokens[x].split(':')[0]
-                tasks.append(asyncio.ensure_future(
-                    check(auth, screen_name, password, email_or_phone, ct0s)))
+            token_parts = token.split(':')
 
-            elif isonlytoken == True:
-                tasks.append(asyncio.ensure_future(check(tokens[x])))
+            if not isonlytoken and not noct0:
+                auth, ct0s, email_or_phone, password, screen_name = token_parts
+                task = sem_task(
+                    check(auth, screen_name, password, email_or_phone, ct0s))
 
-            elif noct0 == True:
-                auth = tokens[x].split(':')[3]
-                email_or_phone = tokens[x].split(':')[2]
-                password = tokens[x].split(':')[1]
-                screen_name = tokens[x].split(':')[0]
-                tasks.append(asyncio.ensure_future(
-                    check(auth, screen_name, password, email_or_phone)))
+            elif isonlytoken:
+                auth = token_parts[0]
+                task = sem_task(check(auth))
+
+            elif noct0:
+                auth, email_or_phone, password, screen_name = token_parts
+                task = sem_task(
+                    check(auth, screen_name, password, email_or_phone))
+
+            tasks.append(task)
 
         except Exception as e:
             print(e)
 
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks, return_exceptions=True)
 
     check_completed()
 
