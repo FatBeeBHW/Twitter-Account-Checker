@@ -1,3 +1,4 @@
-colorama==0.4.6
-httpx==0.24.1
+aiofiles==23.2.1
+aiohttp==3.8.5
 pyfiglet==0.8.post1
+rich==13.5.2
