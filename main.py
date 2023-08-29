@@ -23,6 +23,7 @@ async def validity(auth_token, ct0=None, extra=None):
     if ct0 and not CT0_FIX:
         cookies['ct0'] = ct0
         PROFILE_HEADERS['x-csrf-token'] = ct0
+        
     retries = 0  # Initialize retries
     async with ClientSession(connector=TCPConnector(ssl=False), timeout=ClientTimeout(total=7)) as client:
         for _ in range(MAX_RETRIES):
@@ -39,51 +40,51 @@ async def validity(auth_token, ct0=None, extra=None):
                             if CT0_FIX:
                                 ct0 = new_ct0
 
-                    async with client.post('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies) as response:
-                        source = await response.text()
+                async with client.post('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies) as response:
+                    source = await response.text()
 
-                    status_map = {
-                        200: ("bold green", "VALID"),
-                        "https://twitter.com/account/access": ("bold cyan", "LOCKED"),
-                        "/i/flow/consent_flow": ("bold yellow", "CONSENT")
-                    }
+                status_map = {
+                    200: ("bold green", "VALID"),
+                    "https://twitter.com/account/access": ("bold cyan", "LOCKED"),
+                    "/i/flow/consent_flow": ("bold yellow", "CONSENT")
+                }
 
-                    status_color, status_text = "bold red", "DEAD"
+                status_color, status_text = "bold red", "DEAD"
 
-                    if response.status == 200:
-                        status_color, status_text = status_map[200]
-                    elif "https://twitter.com/account/access" in source:
-                        status_color, status_text = status_map["https://twitter.com/account/access"]
-                    elif "/i/flow/consent_flow" in source:
-                        status_color, status_text = status_map["/i/flow/consent_flow"]
+                if response.status == 200:
+                    status_color, status_text = status_map[200]
+                elif "https://twitter.com/account/access" in source:
+                    status_color, status_text = status_map["https://twitter.com/account/access"]
+                elif "/i/flow/consent_flow" in source:
+                    status_color, status_text = status_map["/i/flow/consent_flow"]
 
-                    # Update global counters
-                    async with count_semaphore:
-                        if status_text == "VALID":
-                            total_valid += 1
-                        elif status_text == "DEAD":
-                            total_dead += 1
-                        elif status_text == "LOCKED":
-                            total_locked += 1
-                        elif status_text == "CONSENT":
-                            total_consent += 1
+                # Update global counters
+                async with count_semaphore:
+                    if status_text == "VALID":
+                        total_valid += 1
+                    elif status_text == "DEAD":
+                        total_dead += 1
+                    elif status_text == "LOCKED":
+                        total_locked += 1
+                    elif status_text == "CONSENT":
+                        total_consent += 1
 
-                    line_components = []
-                    if extra:
-                        line_components.extend(extra)
-                    if ct0:
-                        line_components.append(ct0)
-                    if auth_token:
-                        line_components.append(auth_token)
+                line_components = []
+                if extra:
+                    line_components.extend(extra)
+                if ct0:
+                    line_components.append(ct0)
+                if auth_token:
+                    line_components.append(auth_token)
 
-                    composed_token = ':'.join(line_components) + '\n'
-                    async with aiofiles.open(f'output/{status_text.lower()}.txt', mode='a') as f:
-                        await f.write(composed_token)
+                composed_token = ':'.join(line_components) + '\n'
+                async with aiofiles.open(f'output/{status_text.lower()}.txt', mode='a') as f:
+                    await f.write(composed_token)
 
-                    print(
-                        f"[{status_color}][[bold white]*[{status_color}]] [{status_color}]{auth_token} [bold white][[{status_color}]{status_text}[bold white]]")
+                print(
+                    f"[{status_color}][[bold white]*[{status_color}]] [{status_color}]{auth_token} [bold white][[{status_color}]{status_text}[bold white]]")
 
-                    break
+                break
             except (aiohttp.ClientError, asyncio.TimeoutError, Exception) as e:
                 print(f"[red]Error: {e}")
             retries += 1
