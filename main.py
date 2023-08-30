@@ -26,7 +26,7 @@ async def validity(auth_token, ct0=None, extra=None):
         
     retries = 0  # Initialize retries
     async with ClientSession(connector=TCPConnector(ssl=False), timeout=ClientTimeout(total=7)) as client:
-        for _ in range(MAX_RETRIES):
+        for retries in range(MAX_RETRIES):
             try:
                 if not ct0 or CT0_FIX:
                     async with client.get('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
@@ -87,9 +87,10 @@ async def validity(auth_token, ct0=None, extra=None):
                 break
             except (aiohttp.ClientError, asyncio.TimeoutError, Exception) as e:
                 print(f"[red]Error: {e}")
-            retries += 1
-            if retries <= MAX_RETRIES:
-                print(f"[yellow]Retrying ({retries}/{MAX_RETRIES})...")
+                if retries < MAX_RETRIES - 1:
+                    print(f"[yellow]Retrying ({retries + 1}/{MAX_RETRIES})...")
+                retries += 1
+                continue
 
 
 async def worker(token_queue, progress, task):
@@ -117,6 +118,7 @@ async def worker(token_queue, progress, task):
                 print(
                     f"[yellow]An error occurred while processing token: {e}. Retrying {retries + 1}/{max_retries}")
                 retries += 1
+                continue
 
         if retries == max_retries:
             print(
