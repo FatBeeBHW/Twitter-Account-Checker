@@ -29,7 +29,7 @@ async def validity(auth_token, ct0=None, extra=None):
         for _ in range(MAX_RETRIES):
             try:
                 if not ct0 or CT0_FIX:
-                    async with client.get('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies) as response:
+                    async with client.get('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
                         set_cookie_header = response.headers.getall(
                             'Set-Cookie')
                         new_ct0 = next((s.split(';')[0].split(
@@ -40,7 +40,7 @@ async def validity(auth_token, ct0=None, extra=None):
                             if CT0_FIX:
                                 ct0 = new_ct0
 
-                async with client.post('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies) as response:
+                async with client.post('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
                     source = await response.text()
 
                 status_map = {
