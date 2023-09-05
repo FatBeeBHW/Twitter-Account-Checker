@@ -1,0 +1,7 @@
+
+{
+    "proxy": "", # Your proxy, without protocol (no http//: in front.)
+    "threads": 20, # Number of threads, more threads more speed.
+    "ct0_fix": false # Set it to true if you have issues with your ct0 token, this will fix it and save it in the output.
+}
+￼Enter
