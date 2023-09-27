@@ -73,16 +73,17 @@ def banner():
     return total_tokens  # Return the total number of tokens
 
 
-def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locked, total_consent):
+def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locked, total_consent,total_suspended):
     cls()
     counts = {
         "VALID": total_valid,
         "DEAD": total_dead,
         "LOCKED": total_locked,
-        "CONSENT": total_consent
+        "CONSENT": total_consent,
+        "SUSPENDED": total_suspended
     }
 
-    total_bad = total_dead + total_locked
+    total_bad = total_dead + total_locked + total_suspended + total_consent
     if total_tokens == 0:
         percent = 0  # Avoid dividing by zero
     else:
@@ -106,6 +107,8 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
         f"[bold yellow][*] [bold white]Valid Accounts: [bold green]{counts['VALID']}[/bold green]")
     print(
         f"[bold yellow][*] [bold white]Invalid Accounts: [bold red]{counts['DEAD']}[/bold red]")
+    print(
+        f"[bold yellow][*] [bold white]Suspended Accounts: [bold red]{counts['SUSPENDED']}[/bold red]")
     print(
         f"[bold yellow][*] [bold white]Unlockable: [bold yellow]{counts['LOCKED']}[/bold yellow]")
     print(
