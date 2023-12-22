@@ -95,7 +95,7 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
     ascii_banner = pyfiglet.figlet_format("FatBee's Checker")
     print(f"[bold yellow]{ascii_banner}")
     print(
-        f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitteropensource[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green]")
+        f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitterfunhouse[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green]")
     print(f"[bold white]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold white]")
     print(
         f"[bold green]⏳ Total Running Time: {mm} Minute(s) {ss} Second(s)[/bold green]")
@@ -113,6 +113,8 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
         f"[bold yellow][*] [bold white]Unlockable: [bold yellow]{counts['LOCKED']}[/bold yellow]")
     print(
         f"[yellow][*] [bold white]Consent Locked: [bold yellow]{counts['CONSENT']}[/bold yellow]")
+    print()
+    print(f"[yellow][*] [bold white]You like it? Drop a tip <3: [bold yellow]: 0x7C9EB6dF2349820D27D69805193d7806A7689ade[/bold yellow]")
     print(f"[bold white]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold white]")
     print("[bold red] ** RESTARTING THE CHECKER WILL DELETE ALL THE FILES IN OUTPUT FOLDER **[/bold red]")
     input("Press any key to exit..")

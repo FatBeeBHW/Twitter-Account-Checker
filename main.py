@@ -44,7 +44,7 @@ async def validity(auth_token, ct0=None, extra=None):
 
                 async with client.post('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
                     source = await response.text()
-
+                    #print(source)
                     status_map = {
                         200: ("bold green", "VALID"),
                         "https://twitter.com/account/access": ("bold cyan", "LOCKED"),
@@ -75,41 +75,41 @@ async def validity(auth_token, ct0=None, extra=None):
                         elif status_text == "SUSPENDED":
                             total_suspended += 1
 
-                    line_components = []
-                    if extra:
-                        line_components.extend(extra)
-                    if ct0:
-                        line_components.append(ct0)
-                    if auth_token:
-                        line_components.append(auth_token)
+                        line_components = []
+                        if extra:
+                            line_components.extend(extra)
+                        if ct0:
+                            line_components.append(ct0)
+                        if auth_token:
+                            line_components.append(auth_token)
 
-                    composed_token = ':'.join(line_components) + '\n'
-                    output_files = []
+                        composed_token = ':'.join(line_components) + '\n'
+                        output_files = []
 
-                    if followers_count >= 100_000:
-                        output_files.append('output/100Kplus.txt')
-                    if followers_count >= 10_000:
-                        output_files.append('output/10Kplus.txt')
-                    if followers_count >= 1000:
-                        output_files.append('output/1Kplus.txt')
-                    if followers_count >= 30:
-                        output_files.append('output/30plus.txt')
-                    if not output_files:
-                        output_files.append(f'output/{status_text.lower()}.txt')
+                        if followers_count >= 100_000:
+                            output_files.append('output/100Kplus.txt')
+                        if followers_count >= 10_000:
+                            output_files.append('output/10Kplus.txt')
+                        if followers_count >= 1000:
+                            output_files.append('output/1Kplus.txt')
+                        if followers_count >= 30:
+                            output_files.append('output/30plus.txt')
+                        if not output_files:
+                            output_files.append(f'output/{status_text.lower()}.txt')
 
-                    for output_file in output_files:
-                        async with write_lock:  # Ensure only one task writes to a file at any time
-                            async with aiofiles.open(output_file, mode='a') as f:
-                                try:
-                                    await f.write(composed_token)
-                                    await f.flush()  
-                                except Exception as e:
-                                    print(f"Error writing to {output_file}: {e}")
+                        for output_file in output_files:
+                            async with write_lock:  # Ensure only one task writes to a file at any time
+                                async with aiofiles.open(output_file, mode='a') as f:
+                                    try:
+                                        await f.write(composed_token)
+                                        await f.flush()  
+                                    except Exception as e:
+                                        print(f"Error writing to {output_file}: {e}")
 
-                    print(
-                        f"[{status_color}][[bold white]*[{status_color}]] [{status_color}]{auth_token} [bold white][[{status_color}]{status_text}[bold white]] | Followers: {followers_count}")
+                        print(
+                            f"[{status_color}][[bold white]*[{status_color}]] [{status_color}]{auth_token} [bold white][[{status_color}]{status_text}[bold white]] | Followers: {followers_count}")
 
-                    break
+                        break
             except (aiohttp.ClientError, asyncio.TimeoutError, Exception) as e:
                 print(f"[red]Error: {e}")
                 if retries < MAX_RETRIES - 1:
