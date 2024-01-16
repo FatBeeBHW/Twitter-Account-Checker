@@ -1,0 +1,13 @@
+{
+  "proxy": "https://beeproxies.com | Telegram: @buybee_bot",
+  "threads": 100,
+  "update_console": true,
+  "save_followers_count": false,
+  "ct0_fix": false,
+  "followers_range": {
+    "100000": "100000plus",
+    "10000": "10000plus",
+    "1000": "1000plus",
+    "30": "30plus"
+  }
+}
