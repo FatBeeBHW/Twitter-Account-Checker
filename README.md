@@ -2,7 +2,8 @@
 
 [![xcloud](https://raw.githubusercontent.com/FatBeeBHW/Twitter-Account-Checker/main/ad.jpg)](https://t.me/twittercrack)
 
-![twitter checker](https://github.com/FatBeeBHW/Twitter-Account-Checker/assets/121733071/b85d9adc-d51f-4ca4-a6e1-787a91aa9104)
+![fatbee twitter checker](https://github.com/FatBeeBHW/Twitter-Account-Checker/assets/121733071/925583c0-24c6-4eeb-8630-9a557e521cff)
+
 
 Fast, reliable Twitter Account Checker that doesn't lock accounts on check. Yet. And the best part? its free.
 Far from perfect code, but feel free to correct whatever you feel it needs correction and open a PR.
