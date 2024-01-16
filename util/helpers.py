@@ -5,6 +5,7 @@ from rich import print
 from time import perf_counter
 import pyfiglet
 from util.const import *
+import sys
 
 
 def cls():
@@ -37,7 +38,7 @@ def banner(threads):
     ascii_banner = pyfiglet.figlet_format("FatBee's Checker")
     print(f"[yellow]{ascii_banner}")
     print(
-        f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitteropensource[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green ]                                                                       " #nopep8
+        f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitteropensource[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green ]                                                                                 " #nopep8
     )
 
     try:
@@ -47,7 +48,8 @@ def banner(threads):
 
         if not tokens:
             print("[yellow]\n[!] Tokens File is Empty.\n")
-            exit()
+            input("Press any button to exit...")
+            sys.exit(0)
         else:
             print(
                 f"[yellow]\n[!] Loaded [cyan]{total_tokens:,} [yellow]Accounts")
@@ -73,7 +75,8 @@ def banner(threads):
 
     except FileNotFoundError:
         print("[red]\n[!] Tokens.txt file not found.")
-        exit()
+        input("Press any button to exit...")
+        sys.exit(0)
 
     return total_tokens
 
@@ -117,7 +120,7 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
     print(
         f"[bold yellow][*] [bold white]Invalid Accounts: [bold red]{counts['DEAD']:,}[/bold red]")
     print(
-        f"[bold yellow][*] [bold white]Suspended Accounts: [bold red]{counts['SUSPENDED']:,}[/bold red]")
+        f"[bold yellow][*] [bold white]Suspended Accounts: [bold red]{counts['SUSPENDED']:,}[/bold red][bold white] - Im in need of Suspended tokens, you can donate them to me [bold green]@fatbeebhw")
     print(
         f"[bold yellow][*] [bold white]Unlockable: [bold yellow]{counts['LOCKED']:,}[/bold yellow]")
     print(

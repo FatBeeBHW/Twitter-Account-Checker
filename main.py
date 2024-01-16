@@ -10,6 +10,7 @@ from util.const import *
 from util.helpers import load_tokens, banner, check_completed, cleanup_files
 from rich.progress import Progress
 import os
+
 total_valid = 0
 total_dead = 0
 total_locked = 0
