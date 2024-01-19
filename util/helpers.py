@@ -42,7 +42,7 @@ def banner(threads):
     )
 
     try:
-        with open("tokens.txt", "r") as f:
+        with open("tokens.txt", "r", encoding="latin-1") as f:
             tokens = f.read().splitlines()
         total_tokens = len(tokens)
 
