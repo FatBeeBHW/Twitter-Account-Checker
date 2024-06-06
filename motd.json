@@ -1,5 +1,5 @@
 {
     "date": "2024-06-06",
-    "message": "[green]Wooooo We made it [/green]\n lol\n",
+    "message": "[green]- Update to 7.0.0[/green]\n- Added MOTD for consistent updates provided to the users.\n- New release (exe) hopefully will prevent issues running and as well improve performance.\n",
     "version": "7.0.0"
 }
