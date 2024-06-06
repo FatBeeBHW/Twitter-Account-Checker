@@ -1,6 +1,5 @@
 import aiofiles
 import os
-import pyfiglet
 from rich import print
 from rich.prompt import Prompt
 from time import perf_counter
@@ -8,16 +7,15 @@ import pyfiglet
 from util.const import *
 import sys
 import requests
-import json
+import time
 
 
 def fetch_motd(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raises an HTTPError for bad responses
-        return response.json()  # Parse JSON data directly
+        response.raise_for_status()
+        return response.json()
     except requests.RequestException:
-        # Return default values if there's an error fetching or parsing the JSON
         return {
             "date": "Today",
             "message": "Have a nice day!",
@@ -52,12 +50,17 @@ def banner(threads):
 
     os.system("title FatBee's Account Checker")
     cls()
-    ascii_banner = pyfiglet.figlet_format("FatBee's Checker")
-    print(f"[yellow]{ascii_banner}")
+
+    print(f"""[yellow] _____     _   ____            _        ____ _               _
+|  ___|_ _| |_| __ )  ___  ___( )___   / ___| |__   ___  ___| | _____ _ __ 
+| |_ / _` | __|  _ \ / _ \/ _ \// __| | |   | '_ \ / _ \/ __| |/ / _ \ '__|
+|  _| (_| | |_| |_) |  __/  __/ \__ \ | |___| | | |  __/ (__|   <  __/ |   
+|_|  \__,_|\__|____/ \___|\___| |___/  \____|_| |_|\___|\___|_|\_\___|_|""")
     print(
         f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitterfunhouse[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green ]                                                                                 "  # nopep8
     )
-    motd_url = "https://raw.githubusercontent.com/FatBeeBHW/Twitter-Account-Checker/main/motd.json"
+    timestamp = int(time.time())
+    motd_url = f"https://raw.githubusercontent.com/FatBeeBHW/Twitter-Account-Checker/main/motd.json?token={timestamp}"
     motd_data = fetch_motd(motd_url)
 
     try:
@@ -130,10 +133,16 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
     percent = round(percent, 3)
     final_time = round(perf_counter() - t1_start)
     mm, ss = divmod(final_time, 60)
+    timestamp = int(time.time())
+    motd_url = f"https://raw.githubusercontent.com/FatBeeBHW/Twitter-Account-Checker/main/motd.json?token={timestamp}"
+    motd_data = fetch_motd(motd_url)
 
     os.system("title FatBee's Account Checker")
-    ascii_banner = pyfiglet.figlet_format("FatBee's Checker")
-    print(f"[bold yellow]{ascii_banner}")
+    print(f"""[yellow] _____     _   ____            _        ____ _               _
+|  ___|_ _| |_| __ )  ___  ___( )___   / ___| |__   ___  ___| | _____ _ __ 
+| |_ / _` | __|  _ \ / _ \/ _ \// __| | |   | '_ \ / _ \/ __| |/ / _ \ '__|
+|  _| (_| | |_| |_) |  __/  __/ \__ \ | |___| | | |  __/ (__|   <  __/ |   
+|_|  \__,_|\__|____/ \___|\___| |___/  \____|_| |_|\___|\___|_|\_\___|_|""")
     print(
         f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  | 💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  | 💬 Telegram Group: [bold cyan]@twitterfunhouse[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green]")
     print(f"[bold white]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold white]")
@@ -157,7 +166,13 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
     print(
         f"[yellow][*] [bold white]Consent Locked: [bold yellow]{counts['CONSENT']:,}[/bold yellow]")
     print()
-    print(f"[yellow][*] [bold white]You like it? Drop a tip 💖:[bold yellow] 0x7C9EB6dF2349820D27D69805193d7806A7689ade[/bold yellow]")
+    print(
+        f"[yellow]━━━━━━━━━━━━━━━━ [bold cyan]Updates & Infos ({motd_data['date']}) [yellow]━━━━━━━━━━━━━━━━ \n")
+    print(f"[bold green]📝 Notes:")
+    print(f"{motd_data['message']}\n")
+    print(
+        f"Current Version: {motd_data['version']} | Your version: {VERSION} \n")
+
     print(f"[bold white]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold white]")
     print("[bold red] ** RESTARTING THE CHECKER WILL DELETE ALL THE FILES IN OUTPUT FOLDER ** (NOT THE STAT IF ANY)[/bold red]")
     input("Press any key to exit..")

@@ -1,15 +1,19 @@
+import asyncio
 from rich import print
+import platform
 from time import perf_counter
 import aiohttp
 import json
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-import asyncio
 import aiofiles
 import psutil
 from util.const import *
 from util.helpers import load_tokens, banner, check_completed, cleanup_files
 from rich.progress import Progress
 import os
+
+if platform.system() == "Windows" and asyncio.get_event_loop_policy().get_event_loop() is asyncio.ProactorEventLoop:
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 total_valid = 0
 total_dead = 0
@@ -53,20 +57,17 @@ async def validity(auth_token, ct0=None, extra=None):
                     error_code = error_info.get('code', response.status)
                     bounce_location = error_info.get('bounce_location', '')
 
-                    if error_code == 326 and bounce_location == '/i/flow/consent_flow':
-                        status_color, status_text = "bold yellow", "CONSENT"
-                    elif error_code == 326:
-                        status_color, status_text = "bold steel_blue1", "LOCKED"
-                    else:
-                        status_map = {
-                            200: ("bold chartreuse1", "VALID"),
-                            32: ("red", "DEAD"),
-                            64: ("bold red3", "SUSPENDED"),
-                        }
-                        status_color, status_text = status_map.get(
-                            error_code, ("bold red", "UNKNOWN"))
+                    status_map = {
+                        326: ("bold steel_blue1", "LOCKED") if not bounce_location == '/i/flow/consent_flow' else ("bold yellow", "CONSENT"),
+                        200: ("bold chartreuse1", "VALID"),
+                        32: ("red", "DEAD"),
+                        64: ("bold red3", "SUSPENDED"),
+                    }
 
-                    if status_text == "UNKNOWN" or status_text == None:
+                    status_color, status_text = status_map.get(
+                        error_code, ("bold red", "UNKNOWN"))
+
+                    if status_text in ("UNKNOWN", None):
                         continue
 
                     followers_count = response_json.get(
@@ -143,7 +144,7 @@ async def worker(token_queue, progress, task, total_tokens):
                     completed = progress.tasks[task].completed
                     progress.update(
                         task,
-                        description=f"[bold cyan][*] [white]Checked [green]{completed:,} [white]of [green]{total_tokens} [white]tokens · Valid: {total_valid:,} · Suspended: {total_suspended:,} · Dead: {total_dead:,} · Locked: {total_locked:,}" + (
+                        description=f"[bold cyan][*] [white]Checked [green]{completed:,} [white]of [green]{total_tokens:,} [white]tokens · Valid: {total_valid:,} · Suspended: {total_suspended:,} · Dead: {total_dead:,} · Locked: {total_locked:,}" + (
                             " · [bold red]!!! DO NOT CLOSE, LAST TOKENS ARE SOMETIMES VERY SLOW !!! · " if total_tokens - completed <= 100 else "")
                     )
                     os.system(
