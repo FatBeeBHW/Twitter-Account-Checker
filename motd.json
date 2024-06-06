@@ -1,5 +1,5 @@
 {
     "date": "2024-06-06",
-    "message": "[green]- Update to 7.0.0[/green]\n- Added MOTD for consistent updates provided to the users.\n- New release (exe) hopefully will prevent issues running and as well improve performance.\n",
+    "message": "[green]- Update to 7.0.0[/green]\n- Added MOTD for consistent updates provided to the users. (this)\n- New release (exe) hopefully will prevent issues running and as well improve performance.\n\n[blue]- Proxies:[/blue] beeproxies.com (@buybee_bot)\n[blue]- xCloud[/blue] (Twitter Cracker): @twittercrack",
     "version": "7.0.0"
 }
