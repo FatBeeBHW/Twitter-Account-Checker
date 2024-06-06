@@ -2,10 +2,27 @@ import aiofiles
 import os
 import pyfiglet
 from rich import print
+from rich.prompt import Prompt
 from time import perf_counter
 import pyfiglet
 from util.const import *
 import sys
+import requests
+import json
+
+
+def fetch_motd(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+        return response.json()  # Parse JSON data directly
+    except requests.RequestException:
+        # Return default values if there's an error fetching or parsing the JSON
+        return {
+            "date": "Today",
+            "message": "Have a nice day!",
+            "version": VERSION
+        }
 
 
 def cls():
@@ -38,8 +55,10 @@ def banner(threads):
     ascii_banner = pyfiglet.figlet_format("FatBee's Checker")
     print(f"[yellow]{ascii_banner}")
     print(
-        f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitteropensource[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green ]                                                                                 " #nopep8
+        f"[bold white]🐝 Made by [bold yellow]FatBee[/bold yellow]  |  💬 Telegram: [bold cyan]@fatbeebhw[/bold cyan]  |  💬 Telegram Group: [bold cyan]@twitterfunhouse[/bold cyan]  | ✅ Version: [bold light_green]{VERSION}[/bold light_green ]                                                                                 "  # nopep8
     )
+    motd_url = "https://raw.githubusercontent.com/FatBeeBHW/Twitter-Account-Checker/main/motd.json"
+    motd_data = fetch_motd(motd_url)
 
     try:
         with open("tokens.txt", "r") as f:
@@ -68,11 +87,23 @@ def banner(threads):
         if PROXY_URL:
             print("[bold green][*] You are checking with proxy.")
         else:
-            print("[bold red][!] You are checking proxyless!.")
+            print("[bold red][!] You are checking proxyless!")
 
         print(
-            "[yellow]━━━━━━━━━━━━━━━━ [bold cyan]Initializing Threads [yellow]━━━━━━━━━━━━━━━━ \n")
+            f"[yellow]━━━━━━━━━━━━━━━━ [bold cyan]Updates & Infos ({motd_data['date']}) [yellow]━━━━━━━━━━━━━━━━ \n")
+        print(f"[bold green]📝 Notes:")
+        print(f"{motd_data['message']}\n")
+        print(
+            f"Current Version: {motd_data['version']} | Your version: {VERSION} \n")
+        print(
+            "[yellow]━━━━━━━━━━━━━━━━ [bold cyan]🚀 Are you ready?[yellow] ━━━━━━━━━━━━━━━━ \n")
 
+        are_you_ready = Prompt.ask(
+            "[bold green_yellow]🚀 Are you ready?[/bold green_yellow]", choices=["Yes", "No"], default="Yes")
+
+        if are_you_ready != "Yes":
+            print("[bold red]🛑 Stopping...[/bold red]")
+            exit()
     except FileNotFoundError:
         print("[red]\n[!] Tokens.txt file not found.")
         input("Press any button to exit...")
@@ -112,7 +143,7 @@ def check_completed(t1_start, total_tokens, total_valid, total_dead, total_locke
         f"[bold green]🌐 Total Data Used: {data_usage:.2f} MB[/bold green]\n")
 
     print(
-        f"[bold yellow][*] [bold white]Accounts Checked: [bold yellow]{total_tokens}[/bold yellow]")
+        f"[bold yellow][*] [bold white]Accounts Checked: [bold yellow]{total_tokens:,}[/bold yellow]")
     print(
         f"[bold yellow][*] [bold white]Lock Rate: [bold red]{percent}%[/bold red]")
     print(

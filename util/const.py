@@ -1,14 +1,11 @@
 import json
 
-VERSION = "6.0"
+VERSION = "7.0.0"
 PROFILE_HEADERS = {
-    'authority': 'twitter.com',
-    'accept': '*/*',
-    'accept-language': 'en-US,en;q=0.9',
+    'content-type': 'application/x-www-form-urlencoded',
+    'Referer': 'https://x.com/',
     'authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
-    'origin': 'https://twitter.com',
-    'referer': 'https://twitter.com/settings/profile',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
     'x-twitter-active-user': 'yes',
     'x-twitter-auth-type': 'OAuth2Session',
     'x-twitter-client-language': 'en'

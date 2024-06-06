@@ -28,11 +28,12 @@ async def validity(auth_token, ct0=None, extra=None):
         cookies['ct0'] = ct0
         PROFILE_HEADERS['x-csrf-token'] = ct0
 
-    async with ClientSession(connector=TCPConnector(ssl=False), timeout=ClientTimeout(total=10)) as client:
+    async with ClientSession(connector=TCPConnector(ssl=False, limit=10000000000, enable_cleanup_closed=True), timeout=ClientTimeout(total=10)) as client:
         while True:
             try:
                 if not ct0 or CT0_FIX:
-                    async with client.get('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
+
+                    async with client.get('https://api.x.com/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
                         set_cookie_header = response.headers.getall(
                             'Set-Cookie')
                         new_ct0 = next((s.split(';')[0].split(
@@ -43,7 +44,8 @@ async def validity(auth_token, ct0=None, extra=None):
                             if CT0_FIX:
                                 ct0 = new_ct0
 
-                async with client.post('https://twitter.com/i/api/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
+                async with client.post('https://api.x.com/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
+
                     source = await response.text()
                     response_json = json.loads(source)
 
@@ -118,6 +120,7 @@ async def worker(token_queue, progress, task, total_tokens):
             break
 
         max_retries = 10
+        retries = 0
         for retries in range(max_retries):
             try:
                 components = line.strip().split(":")
@@ -144,18 +147,21 @@ async def worker(token_queue, progress, task, total_tokens):
                             " · [bold red]!!! DO NOT CLOSE, LAST TOKENS ARE SOMETIMES VERY SLOW !!! · " if total_tokens - completed <= 100 else "")
                     )
                     os.system(
-                        f"title Status: {completed:,} of {total_tokens} checked · Valid: {total_valid:,} · Suspended: {total_suspended:,} · Dead: {total_dead:,} · Locked: {total_locked:,} · Telegram: @fatbeebhw")
+                        f"title Status: {completed:,} of {total_tokens:,} checked · Valid: {total_valid:,} · Suspended: {total_suspended:,} · Dead: {total_dead:,} · Locked: {total_locked:,} · Telegram: @fatbeebhw")
                 token_queue.task_done()
                 break
 
             except Exception as e:
                 print(
-                    f"[yellow][!] Error:  {auth_token} | ({retries + 1}/{max_retries})...")
+                    f"[yellow][!] Error: {auth_token} | ({retries + 1}/{max_retries})...")
+                retries += 1
+                continue
 
         else:
             print(
                 f"[red]Max retries reached for token {line}. Saving as error.")
             token_queue.task_done()
+            break
 
 
 async def main():
