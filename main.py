@@ -1,19 +1,21 @@
 import asyncio
+import curl_cffi
+from curl_cffi.requests import AsyncSession
 from rich import print
-import platform
 from time import perf_counter
-import aiohttp
-import json
-from aiohttp import ClientSession, ClientTimeout, TCPConnector
+import random
 import aiofiles
 import psutil
 from util.const import *
 from util.helpers import load_tokens, banner, check_completed, cleanup_files
 from rich.progress import Progress
 import os
+import warnings
+import orjson
 
-if platform.system() == "Windows" and asyncio.get_event_loop_policy().get_event_loop() is asyncio.ProactorEventLoop:
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+warnings.filterwarnings("ignore")
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 
 total_valid = 0
 total_dead = 0
@@ -32,77 +34,80 @@ async def validity(auth_token, ct0=None, extra=None):
         cookies['ct0'] = ct0
         PROFILE_HEADERS['x-csrf-token'] = ct0
 
-    async with ClientSession(connector=TCPConnector(ssl=False, limit=10000000000, enable_cleanup_closed=True), timeout=ClientTimeout(total=10)) as client:
+    async with AsyncSession(proxy=PROXY, impersonate=random.choice(["chrome124", "chrome123"]), timeout=10, max_clients=1) as client:
         while True:
             try:
                 if not ct0 or CT0_FIX:
+                    response = await client.head('https://business.x.com/', headers=PROFILE_HEADERS, cookies=cookies)
 
-                    async with client.get('https://api.x.com/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
-                        set_cookie_header = response.headers.getall(
-                            'Set-Cookie')
-                        new_ct0 = next((s.split(';')[0].split(
-                            '=')[1] for s in set_cookie_header if 'ct0' in s), None)
-                        if new_ct0:
-                            cookies['ct0'] = new_ct0
-                            PROFILE_HEADERS['x-csrf-token'] = new_ct0
-                            if CT0_FIX:
-                                ct0 = new_ct0
+                    ct0_value = response.cookies.get('ct0')
 
-                async with client.post('https://api.x.com/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies, proxy=PROXY) as response:
-
-                    source = await response.text()
-                    response_json = json.loads(source)
-
-                    error_info = response_json.get('errors', [{}])[0]
-                    error_code = error_info.get('code', response.status)
-                    bounce_location = error_info.get('bounce_location', '')
-
-                    status_map = {
-                        326: ("bold steel_blue1", "LOCKED") if not bounce_location == '/i/flow/consent_flow' else ("bold yellow", "CONSENT"),
-                        200: ("bold chartreuse1", "VALID"),
-                        32: ("red", "DEAD"),
-                        64: ("bold red3", "SUSPENDED"),
-                    }
-
-                    status_color, status_text = status_map.get(
-                        error_code, ("bold red", "UNKNOWN"))
-
-                    if status_text in ("UNKNOWN", None):
+                    if ct0_value:
+                        cookies['ct0'] = ct0_value
+                        PROFILE_HEADERS['x-csrf-token'] = ct0_value
+                        if CT0_FIX:
+                            ct0 = ct0_value
+                    else:
                         continue
 
-                    followers_count = response_json.get(
-                        'followers_count', 0) if status_text == "VALID" else 0
+                response = await client.post('https://api.x.com/1.1/account/update_profile.json', headers=PROFILE_HEADERS, cookies=cookies)
 
-                    composed_token = ':'.join(
-                        str(item)
-                        for sublist in [extra, ct0, auth_token]
-                        for item in (sublist if isinstance(sublist, list) else [sublist])
-                        if item is not None
-                    )
+                response_json = orjson.loads(response.content)
 
-                    if followers_count >= MIN_THRESHOLD:
-                        output_file = next(
-                            (f'output/{name}.txt' for threshold, name in THRESHOLDS.items() if followers_count >= threshold))
-                        if SAVE_FOLLOWER_COUNT:
-                            composed_token += f":{followers_count}\n"
-                        else:
-                            composed_token += "\n"
+                error_info = response_json.get('errors', [{}])[0]
+                error_code = error_info.get('code', response.status_code)
+                bounce_location = error_info.get('bounce_location', '')
+
+                status_map = {
+                    326: ("bold steel_blue1", "LOCKED") if bounce_location != '/i/flow/consent_flow' else ("bold yellow", "CONSENT"),
+                    200: ("bold chartreuse1", "VALID"),
+                    32: ("red", "DEAD"),
+                    64: ("bold red3", "SUSPENDED"),
+                }
+
+                status_color, status_text = status_map.get(
+                    error_code, ("bold red", "UNKNOWN"))
+
+                # Check if the status is valid
+                if status_text == "VALID":
+                    followers_count = response_json.get('followers_count', 0)
+                elif status_text in ("DEAD", "SUSPENDED", "LOCKED", "CONSENT"):
+                    followers_count = 0
+                else:
+                    continue
+
+                composed_token = ':'.join(
+                    str(item)
+                    for sublist in [extra, ct0, auth_token]
+                    for item in (sublist if isinstance(sublist, list) else [sublist])
+                    if item is not None
+                )
+
+                if followers_count >= MIN_THRESHOLD:
+                    output_file = next(
+                        (f'output/{name}.txt' for threshold, name in THRESHOLDS.items() if followers_count >= threshold))
+                    if SAVE_FOLLOWER_COUNT:
+                        composed_token += f":{followers_count}\n"
                     else:
                         composed_token += "\n"
-                        output_file = f'output/{status_text.lower()}.txt'
+                else:
+                    composed_token += "\n"
+                    output_file = f'output/{status_text.lower()}.txt'
 
-                    async with write_lock:
-                        async with aiofiles.open(output_file, mode='a', encoding="latin-1") as f:
-                            try:
-                                await f.write(composed_token)
-                                await f.flush()
-                            except Exception as e:
-                                print(f"Error writing to {output_file}: {e}")
-                    if UPDATE_CONSOLE:
-                        print(f"[{status_color}][[bold white]*[{status_color}]] [{status_color}]{auth_token} [bold white][[{status_color}]{status_text}[bold white]] | Followers: {followers_count:,}")
+                async with write_lock:
+                    async with aiofiles.open(output_file, mode='a', encoding="latin-1") as f:
+                        try:
+                            await f.write(composed_token)
+                            await f.flush()
+                        except Exception as e:
+                            print(f"Error writing to {output_file}: {e}")
+                if UPDATE_CONSOLE:
+                    print(f"[{status_color}][[bold white]*[{status_color}]] [{status_color}]{
+                          auth_token} [bold white][[{status_color}]{status_text}[bold white]] | Followers: {followers_count:,}")
 
-                    return status_text
-            except (aiohttp.ClientError, asyncio.TimeoutError, Exception):
+                return status_text
+            except (curl_cffi.CurlError, curl_cffi.CurlECode, Exception) as e:
+                print(e)
                 return None
 
 
@@ -128,6 +133,7 @@ async def worker(token_queue, progress, task, total_tokens):
                 auth_token = components[-1]
                 ct0_value = components[-2] if len(components) > 1 else None
                 remaining_components = components[:-2]
+
                 status_text = await validity(auth_token, ct0=ct0_value, extra=remaining_components)
                 async with count_semaphore:
                     status_counters = {

@@ -1,43 +1,62 @@
-# Twitter Account Checker
+
+# Twitter Account Checker 🐦
 
 [![xcloud](https://raw.githubusercontent.com/FatBeeBHW/Twitter-Account-Checker/main/ad.jpg)](https://t.me/twittercrack)
 
 ![fatbee twitter checker](https://github.com/FatBeeBHW/Twitter-Account-Checker/assets/121733071/925583c0-24c6-4eeb-8630-9a557e521cff)
 
-Fast, reliable Twitter Account Checker that doesn't lock accounts on check. Yet. And the best part? its free.
-Far from perfect code, but feel free to correct whatever you feel it needs correction and open a PR.
+Fast and reliable Twitter Account Checker that’s safe to use without risking account locks (for now). Best part? It's completely free! 🎉
 
-The checker supports any format that ends with ct0:auth_token or just auth_token (basically, any format.)
+Feel free to improve the code and open a PR if you see room for enhancements. This checker supports any account format that ends with `ct0:auth_token` or simply `auth_token`.
 
-Telegram Chat: https://t.me/twitterfunhouse
+📢 **Join our Telegram Chat**: [Twitter Funhouse](https://t.me/twitterfunhouse)
 
-# What do i need to use it?
+---
 
-- Some accounts, duh.
-- Rota proxy
-- Or no proxy at all.
+## 🚀 Features
 
-# Config Explanation
+- **Flexible Format:** Works with any format ending in `ct0:auth_token` or just `auth_token`.
+- **Customizable Settings:** Adjust threads, follower count, and other options.
+- **Proxies Optional:** Use with a rotating proxy for optimal results, but works without one too.
+  
+---
+
+## 🔧 Requirements
+
+- Some Twitter accounts to check, obviously. 😉
+- Ideally, a rotating proxy, though a proxy isn’t strictly necessary in case you need to check few accounts. 
+
+---
+
+## ⚙️ Configuration Guide
+
+Customize your settings using the following configuration format:
 
 ```json
-
 {
-  "proxy": "https://beeproxies.com | Telegram: @buybee_bot", # Your proxy, ideally rotating one (username:password@host:port)
-  "threads": 100, # How fast we go, if you are unsure keep it under 50, ideally 20 (heavlly depends on your system and proxy.)
-  "update_console": true, # Dont want messy BRRRRRRRRRR console? Set it to false.
-  "save_followers_count": false, # Save followers count for stat accounts.
-  "ct0_fix": false, # If your token have broken ct0 but valid auth_token, enable this and it will be fixed.
-  "followers_range": {  # Set ranges for collecting stat accounts format is "Number Of followers":"File Name", must have one. Ideally 2.
+  "proxy": "https://beeproxies.com | Telegram: @buybee_bot", // Your proxy, ideally rotating (format: username:password@host:port)
+  "threads": 500, // Speed of checks. For most setups, keep under 200; ideally 100 (depends on your system and proxy).
+  "update_console": true, // Set to false to reduce console clutter.
+  "save_followers_count": false, // Enable to save follower count for stat accounts.
+  "ct0_fix": false, // Set to true if ct0 token is broken but auth_token is valid.
+  "followers_range": {  // Ranges for saving stat accounts by followers, format is "Follower Count":"File Name"
     "100000": "100000plus",
     "10000": "10000plus",
     "1000": "1000plus",
     "30": "30plus"
   }
 }
-
-
 ```
 
-# How to build in to exe
+---
 
+## 🛠️ Building the Checker into an Executable
+
+To create an executable from the script, use **PyInstaller** with the following command:
+
+```bash
 pyinstaller.exe --onefile --name "Twitter Token Checker @fatbeebhw" --icon="icon.png" --collect-all "pyfiglet" main.py
+```
+
+This will bundle everything into a single executable file named **"Twitter Token Checker @fatbeebhw"** with an icon of your choice.
+

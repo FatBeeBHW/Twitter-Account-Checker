@@ -1,14 +1,14 @@
 import json
 
-VERSION = "7.0.0"
+VERSION = "8.0.0"
+
 PROFILE_HEADERS = {
+    'x-twitter-client-language': 'en',
+    'authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
     'content-type': 'application/x-www-form-urlencoded',
     'Referer': 'https://x.com/',
-    'authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-    'x-twitter-active-user': 'yes',
     'x-twitter-auth-type': 'OAuth2Session',
-    'x-twitter-client-language': 'en'
+    'x-twitter-active-user': 'yes',
 }
 
 with open("config.json", "r") as f:
